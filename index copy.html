@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+    <style>
+        canvas {
+            background: grey;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            z-index: 2;
+            /* width: 1364px;
+            height: 946px; */
+        }
+
+        article {
+            position: relative;
+            z-index: 2;
+        }
+        section {
+            padding-top: 100px;
+            padding-bottom: 100px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="1000" height="500"></canvas>
+    <main>
+        <article>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+        </article>
+    </main>
+
+<script>
+var configs = [
+    [
+        {
+            x: 600,
+            y: 160,
+            dx: 100,
+            dy: 100,
+            reverseDraw: true,
+            rotateSpeed: 0.1,
+            color: "blue",
+        },
+        {
+            x: 600,
+            y: 160,
+            dx: 100,
+            dy: 100,
+            reverseDraw: false,
+            rotateSpeed: 0.1,
+            color: "blue",
+        }
+    ],
+    [
+        {
+            x: 100,
+            y: 160,
+            dx: 100,
+            dy: 100,
+            reverseDraw: true,
+            rotateSpeed: 2,
+        },
+        {
+            x: 100,
+            y: 160,
+            dx: 100,
+            dy: 100,
+            reverseDraw: false,
+            rotateSpeed: 2,
+        }
+    ],
+    [
+        {
+            x: 100,
+            y: 300,
+            dx: 100,
+            dy: 100,
+            reverseDraw: true,
+            rotateSpeed: 2,
+            color: "red",
+        },
+        {
+            x: 100,
+            y: 300,
+            dx: 100,
+            dy: 100,
+            reverseDraw: false,
+            rotateSpeed: 2,
+            color: "red",
+        }
+    ]
+
+];
+
+(function (configs) {
+
+    var stage;
+        default_color = "#f7f7f7";
+        
+    function init(configs) {
+
+        stage = new createjs.Stage('myCanvas');
+         
+        for (var i = 0; i < Object.keys(configs).length; ++i) {
+            var target_config = null;
+            var shapes = _.map(configs[i], function(config){
+                target_config = config;
+                var shape_obj = new createjs.Shape();
+                setDrawing(shape_obj, config);
+                drawTriangle(shape_obj.graphics, config);
+                return shape_obj;
+            })
+            setEventObjs(shapes, target_config)
+        }
+
+        setEventStage();
+    }
+
+    function setDrawObj () {
+        var shapes = _.map(configs, function(config){
+            
+            var shape_obj = new createjs.Shape();
+            stage.addChild(shape_obj);
+            shape_obj.x = config.x;
+            shape_obj.y = config.y;
+
+            drawTriangle(shape_obj.graphics, config.reverseDraw);
+            return shape_obj;
+        })
+
+        setEvent();
+    }
+    
+    function rotate(shepe_objs, d_rotate) {
+        var length = Object.keys(shepe_objs).length;
+        return function(){
+            for (var i = 0; i < length; ++i) {
+                shepe_objs[i].rotation += d_rotate;
+            }
+        }
+    }
+    
+    function setEventStage() {
+        // 常にStageを更新 
+        createjs.Ticker.addEventListener('tick', stage);
+        // 適切なフレームレート
+        createjs.Ticker.timingMode = createjs.Ticker.RAF;
+    }
+
+    function setEventObjs (shapes, config) {
+        createjs.Ticker.addEventListener('tick',rotate(shapes, config.rotateSpeed));
+    }
+    
+    function setDrawing(shape_obj, config) {
+        stage.addChild(shape_obj);
+        shape_obj.x = 0;
+        shape_obj.y = 0;
+        shape_obj.graphics.beginFill(config.color? config.color : default_color)
+    }
+
+    function drawTriangle(myGraph, config) {
+        var dx = 1000,
+            dy = 300;
+        myGraph.moveTo(config.x, config.y); // (0,0)座標から描き始める
+        myGraph.lineTo(config.x + reverseDrawDraw(config.dx, config.reverseDraw), config.y - reverseDrawDraw(config.dy, config.reverseDraw)); // (100,0)座標まで辺を描く
+        myGraph.lineTo(config.x + reverseDrawDraw(config.dx, config.reverseDraw), config.y + reverseDrawDraw(config.dy, config.reverseDraw)); // (0,100)座標まで辺を描く
+        myGraph.lineTo(config.x, config.y); // (0,0)座標まで辺を描く
+
+        // 更新
+        stage.update();
+
+        function reverseDrawDraw(value, flag) {
+            if (flag) {
+                return value
+            }
+            return -value
+        }
+    }
+
+    init(configs);
+}(configs))
+</script>
+</body>
+</html>

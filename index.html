@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+    <style>
+        canvas {
+            /* background: grey; */
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            z-index: -1;
+        }
+        main {
+            position: static;
+            z-index: 100;
+        }
+        section {
+            padding-top: 100px;
+            padding-bottom: 100px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <main>
+        <article>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+            <section>
+                <h1>aaaaa</h1>
+                <p>bbb</p>
+                <p>ccccc</p>
+            </section>
+        </article>
+    </main>
+<script>
+var configs = [
+    {
+        container: {
+            x: 300,
+            rotateSpeed: -0.2,
+        },
+        childs: [
+            {
+                reverseDraw: true,
+            },
+            {
+   
+                reverseDraw: false,
+                
+            }
+        ]
+    },
+    {
+        container: {
+            x: 300,
+            rotateSpeed: 0.2,
+        },
+        childs: [
+            {
+                reverseDraw: true,
+            },
+            {
+   
+                reverseDraw: false,
+                
+            }
+        ]
+    },
+    {
+        container: {
+            x: 600,
+            rotateSpeed: -0.5,
+        },
+        childs: [
+            {
+                reverseDraw: true,
+            },
+            {
+   
+                reverseDraw: false,
+                
+            }
+        ]
+    },
+    {
+        container: {
+            x: 900,
+            rotateSpeed: 0.2,
+        },
+        childs: [
+            {
+                reverseDraw: true,
+            },
+            {
+   
+                reverseDraw: false,
+                
+            }
+        ]
+    },
+];
+var canvas_config = {
+    width: 1000,
+    height: 1000
+};
+
+(function (configs, canvas_config) {
+
+    var stage;
+        default_color = "#f7f7f7";
+        
+    function init (canvas_config) {
+        var cv = document.getElementById('myCanvas');
+        cv.height = canvas_config.height;
+        cv.width = canvas_config.width;
+    }
+
+    function boot(configs, canvas_config) {
+
+        stage = new createjs.Stage('myCanvas');
+        stage.enableMouseOver();
+        var container_y = canvas_config.height/5;
+
+        for (var i = 0; i < Object.keys(configs).length; ++i) {
+            var container = new createjs.Container();
+            container.x = configs[i].container.x;
+            container.y = container_y*(i+1);
+            configs[i].container.old_rotateSpeed = configs[i].container.rotateSpeed;
+            stage.addChild(container); // 画面に追
+
+            var shapes = _.map(configs[i].childs, function(child_config){
+                var shape_obj = new createjs.Shape();
+                setDrawing(shape_obj, configs[i].container);
+                drawTriangle(shape_obj.graphics, child_config.reverseDraw);
+                container.addChild(shape_obj);
+            })
+
+            setEventObjs(container, configs[i].container)
+        }
+
+        setEventStage();
+    }
+
+    function setEventStage() {
+        // 常にStageを更新 
+        createjs.Ticker.addEventListener('tick', stage);
+        // 適切なフレームレート
+        createjs.Ticker.timingMode = createjs.Ticker.RAF;
+    }
+
+    function setEventObjs (target, config) {
+        target.addEventListener("mouseover", handleMouseOver(config));
+        target.addEventListener("mouseout", handleMouseOut(config));
+        createjs.Ticker.addEventListener('tick',rotate(target, config.rotateSpeed));
+    }
+    
+    function rotate(target, d_rotate) {
+        return function(){
+            
+            target.rotation += d_rotate;
+            stage.update();
+        }
+    }
+
+    function handleMouseOver(config) {
+        return function (event) {
+            if (config.rotateSpeed === config.old_rotateSpeed) {
+                config.rotateSpeed = 10*config.rotateSpeed;
+                stage.update();
+            }
+        }
+    }
+
+    function handleMouseOut(config) {
+        return function (event) {
+            config.rotateSpeed = config.old_rotateSpeed;
+            console.log(config.rotateSpeed);
+            stage.update();
+        }
+    }
+    
+    function setDrawing(shape_obj, config) {
+        shape_obj.graphics.beginFill(config.color? config.color : default_color)
+    }
+
+    function drawTriangle(myGraph, flag) {
+        var x = 0,
+            y = 0, 
+            dx = 10000,
+            dy = 3000;
+        myGraph.moveTo(x, y);
+        myGraph.lineTo(x + reverse(dx, flag), y - reverse(dy, flag));
+        myGraph.lineTo(x + reverse(dx, flag), y + reverse(dy, flag));
+        myGraph.lineTo(x, y);
+
+
+    }
+
+    function reverse(value, flag) {
+        if (flag) {
+            return value
+        }
+        return -value
+    }
+
+    init(canvas_config);
+    boot(configs, canvas_config);
+}(configs, canvas_config))
+</script>
+</body>
+</html>
